@@ -10,19 +10,28 @@
         $sql = "SELECT * FROM `user` WHERE `email` = '{$email}'";
 
         $result = mysqli_query($conn, $sql);
-
+        
         if (mysqli_num_rows($result)) {
             header("Location: ./index.php?c=boodschap&alert=emailexists");
         } else {
             $password = "geheim";
-            $password_hash = password_hash($password, PASSWORD_BCRYPT);
 
-            $sql = "INSERT INTO `user` (`user_id`, `email`, `password`, `hash`) VALUES ( NULL, '$email', '$password', '$password_hash');";
+            $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $charactersLength = strlen($characters);
+            $hash = '';
+            for ($i = 0; $i < 32; $i++) {
+                $hash .= $characters[rand(0, $charactersLength - 1)];
+            }
 
+            $password_hash = password_hash($password.$hash, PASSWORD_BCRYPT);
+
+            $sql = "INSERT INTO `user` (`user_id`, `email`, `password`, `hash`) VALUES ( NULL, '$email', '$password_hash', '$hash');";
+            echo $sql; exit;
             $result = mysqli_query($conn, $sql); 
             
             $id = mysqli_insert_id($conn);
-            
+            var_dump(mysqli_error($conn));
+            var_dump($result); exit;
             if ($result){
                 $to = $email;
                 $subject = "Activeer uw account!";
@@ -56,4 +65,7 @@
             }
         }
     }
-?>
+    /*
+    SELECT password, hash FROM user WHERE email = 
+    formPass + dbHash = dbPass -> Password_verify
+    password_verify(formPass.$row['hash'], $row['password'])*/?>
